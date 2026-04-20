@@ -171,36 +171,39 @@ async def clean_excel(
             null_count = df_cleaned[col].isna().sum()
             columns_info.append(f"{col} ({col_type}, {unique_count} unique, {null_count} nulls)")
 
-        # 4. Create AI prompt requesting JSON format
-        prompt = f"""Analyze this dataset and suggest exactly 3 types of analysis.
+         # 4. Prepare data sample (first 5 rows) for AI analysis
+        # Convert first 5 rows to string for context
+        sample_data = df_cleaned.head(5).to_string(index=False)
 
-Return your answer in this exact JSON format:
-{{
-  "suggestions": [
-    {{
-      "title": "Analysis Name",
-      "description": "Brief description",
-      "steps": ["step 1", "step 2", "step 3"]
-    }},
-    {{
-      "title": "Second Analysis Name", 
-      "description": "Brief description",
-      "steps": ["step 1", "step 2", "step 3"]
-    }},
-    {{
-      "title": "Third Analysis Name",
-      "description": "Brief description", 
-      "steps": ["step 1", "step 2", "step 3"]
-    }}
-  ]
-}}
+         # Limit sample length if too long (to avoid token limits)
+        if len(sample_data) > 1000:
+            sample_data = sample_data[:1000] + "... [truncated]"
 
-Columns: {', '.join(columns_info)}
-Cleaning performed: {'; '.join(cleaning_report['actions_performed'])}
+        columns_info = []
+        for col in df_cleaned.columns:
+            col_type = str(df_cleaned[col].dtype)
+            unique_count = df_cleaned[col].nunique()
+            null_count = df_cleaned[col].isna().sum()
+            columns_info.append(f"{col} ({col_type}, {unique_count} unique, {null_count} nulls)")
 
-Important: Return ONLY the JSON, no other text."""
+        # 5. Create AI prompt with sample data
+        prompt = f"""Analyze this dataset based on column names and actual data content.
 
-        # 5. Call Ollama API with streaming response
+    Dataset structure:
+    - Total rows: {len(df_cleaned)}
+    - Columns: {', '.join(columns_info)}
+
+    Sample data (first 5 rows):
+    {sample_data}
+
+    Cleaning performed: {'; '.join(cleaning_report['actions_performed'])}
+
+    Based on this sample data, suggest exactly 3 types of analysis that would be most valuable.
+
+    Return your answer in this exact JSON format:
+    {{"suggestions":[{{"title":"Analysis 1","description":"What it does","steps":["Step 1","Step 2","Step 3"]}},{{"title":"Analysis 2","description":"What it does","steps":["Step 1","Step 2","Step 3"]}},{{"title":"Analysis 3","description":"What it does","steps":["Step 1","Step 2","Step 3"]}}]}}"""
+
+        # 6. Call Ollama API with streaming response
         response = requests.post(
             OLLAMA_URL,
             json={"model": MODEL, "prompt": prompt},
@@ -257,14 +260,14 @@ Important: Return ONLY the JSON, no other text."""
                 ]
             }
 
-        # 6. Create Excel file in memory for download
+        # 7. Create Excel file in memory for download
         output = io.BytesIO()
         df_cleaned.to_excel(output, index=False, engine='openpyxl')
         output.seek(0)
         file_content = output.read()
         base64_content = base64.b64encode(file_content).decode('utf-8')
 
-        # 7. Return comprehensive response with all metadata
+        # 8. Return comprehensive response with all metadata
         return {
             "initial_row_count": cleaning_report["initial_row_count"],
             "row_count": cleaning_report["final_row_count"],
