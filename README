@@ -1,0 +1,73 @@
+# DataAId
+
+**DataAId** is an AI-powered assistant that helps you clean messy database exports before data analysis — removing the need for a manual data-cleaning step when working with tools like **Pivot Tables** or **Power BI**.
+
+## Overview
+
+DataAId automatically processes and cleans uploaded Excel or CSV files, returning a structured and ready-to-use dataset of the same format.
+Additionally, it generates **three AI-based recommendations** suggesting possible ways to analyze the cleaned data.
+
+This tool is ideal for analysts, business users, or anyone who frequently works with data exports that require preprocessing before visualization or deeper analysis.
+
+## Technology Stack
+
+- **Backend:** Python (FastAPI)
+- **AI Integration:** Ollama (LLaMA3)
+- **Frontend:** React with Chakra UI
+- **Data Processing:** Pandas, NumPy
+
+## Features
+
+- Upload Excel (`.xlsx`) or CSV datasets
+- Automated data cleaning (duplicates, missing values, outliers)
+- Download the cleaned dataset in its original format
+- Receive **3 AI-powered analysis suggestions** with implementation steps
+- Includes a built-in test file for demonstration
+
+---
+
+## Project Structure
+
+/frontend → React user interface
+/backend → Python API and data-processing logic
+/test_data → Example dataset for testing
+/assets → Logo and static media
+
+---
+
+## Installation & Run Instructions
+
+1. Clone the Repository
+git clone https://github.com/<your-username>/DataAId.git
+cd DataAId
+2. Backend Setup (Python)
+cd backend
+python -m venv venv
+
+# On Windows:
+venv\Scripts\activate
+# On Mac/Linux:
+source venv/bin/activate
+
+pip install -r requirements.txt
+uvicorn main:app --reload
+3. Frontend Setup (React)
+cd ../frontend
+npm install
+npm start
+4. Access the App
+Open your browser and go to: http://localhost:3000
+
+How It Works
+Upload your own data file or use the provided test dataset
+DataAId cleans and standardizes the data automatically (removes duplicates, fills missing values, detects data types)
+The system displays three AI-generated suggestions for further data analysis
+Download the cleaned dataset ready for use in BI or visualization tools
+Demo
+A sample dataset is provided within the project (/test_data).
+Upload it to quickly test the system's cleaning and AI suggestion features.
+
+License
+This project is for educational and experimental purposes only.
+
+© 2024 DataAId Team
